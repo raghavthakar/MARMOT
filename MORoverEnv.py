@@ -150,7 +150,7 @@ class MORoverEnv:
         Returns a zero reward vector if reward mode is Final and the timestep is not ep_length - 1.
         """
         # Initialize the reward vector as a dictionary with objectives as keys and zeroed cumulative rewards
-        reward_vector = {poi.obj: 0 for poi in self.pois}
+        reward_vector = {obj: 0 for obj in range(self.num_objs)}
 
         # check the reward mode. only compute reward if the timestep allows it.
         if self.global_reward_mode == "Aggregated" or (self.global_reward_mode == "Final" and timestep == self.ep_length - 1):
@@ -320,8 +320,8 @@ class MORoverEnv:
                 # 2D environment
                 num_cones = num_sensors
                 cone_angle = 360.0 / num_cones
-                poi_counts = [0] * num_cones
-                poi_densities = [0] * num_cones
+                poi_counts = [0] * num_cones * self.num_objs # distinct poi observations for each objective
+                poi_densities = [0] * num_cones * self.num_objs # distinct poi observations for each objective
                 agent_counts = [0] * num_cones
                 agent_densities = [0] * num_cones
 
@@ -334,8 +334,8 @@ class MORoverEnv:
                     if distance <= obs_radius:
                         angle = math.degrees(math.atan2(dy, dx)) % 360
                         cone_index = int(angle // cone_angle)
-                        poi_counts[cone_index] += 1
-                        poi_densities[cone_index] += math.exp(-distance/self.poi_obs_temp)
+                        poi_counts[poi.obj*num_cones + cone_index] += 1
+                        poi_densities[poi.obj*num_cones + cone_index] += math.exp(-distance/self.poi_obs_temp)
 
                 # Count other agents within observation radius and cones
                 for other_idx, other_pos in enumerate(rover_locations):
@@ -348,6 +348,11 @@ class MORoverEnv:
                     if distance <= obs_radius:
                         angle = math.degrees(math.atan2(dy, dx)) % 360
                         cone_index = int(angle // cone_angle)
+
+                        # Clamp the cone_index so we never go out of range
+                        if cone_index == num_cones:
+                            cone_index = num_cones - 1 # avoid the floating point edge case errors of atan2
+                        
                         agent_counts[cone_index] += 1
                         agent_densities[cone_index] += math.exp(-distance/self.agent_obs_temp)
                 
