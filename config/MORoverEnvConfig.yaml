@@ -10,6 +10,7 @@ Environment:
   local_reward_kneecap: 10.0
   local_reward_temp: 2
   observation_mode: 'density'
+  average_density_readings: False # Average or aggregate the density measurements in the sector?
   poi_obs_temp: 2
   agent_obs_temp: 2
   include_location_in_obs: False     # Agents do NOT see their own absolute position

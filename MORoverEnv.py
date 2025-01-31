@@ -121,6 +121,7 @@ class MORoverEnv:
         self.local_reward_kneecap = self.config_data['Environment']['local_reward_kneecap']
         self.local_reward_temp = self.config_data['Environment']['local_reward_temp']
         self.observation_mode = self.config_data['Environment']['observation_mode']
+        self.average_density_readings = self.config_data['Environment']['average_density_readings']
         self.poi_obs_temp = self.config_data['Environment']['poi_obs_temp'] # Temp for state info of the pois -> e^-x/temp
         self.agent_obs_temp = self.config_data['Environment']['agent_obs_temp'] # Temp for state info of the agents -> e^-x/temp
         self.include_location_in_obs = self.config_data['Environment']['include_location_in_obs']
@@ -356,13 +357,14 @@ class MORoverEnv:
                         agent_counts[cone_index] += 1
                         agent_densities[cone_index] += math.exp(-distance/self.agent_obs_temp)
                 
-                # Average the poi densities
-                for cone_idx in range(len(poi_densities)):
-                    poi_densities[cone_idx] = poi_densities[cone_idx] / poi_counts[cone_idx] if poi_counts[cone_idx] > 0 else 0
-                
-                # Average the agent densities
-                for cone_idx in range(len(agent_densities)):
-                    agent_densities[cone_idx] = agent_densities[cone_idx] / agent_counts[cone_idx] if agent_counts[cone_idx] > 0 else 0
+                if self.average_density_readings == True:
+                    # Average the poi densities
+                    for cone_idx in range(len(poi_densities)):
+                        poi_densities[cone_idx] = poi_densities[cone_idx] / poi_counts[cone_idx] if poi_counts[cone_idx] > 0 else 0
+                    
+                    # Average the agent densities
+                    for cone_idx in range(len(agent_densities)):
+                        agent_densities[cone_idx] = agent_densities[cone_idx] / agent_counts[cone_idx] if agent_counts[cone_idx] > 0 else 0
                 
                 # Normalise the POI count
                 for i in range(len(poi_counts)):
