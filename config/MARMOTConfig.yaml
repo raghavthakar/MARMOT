@@ -5,7 +5,7 @@ NSGAII:
   pop_size: 24
   policy_mutation_noise_std: 0.2
   policy_mutation_noise_mean: 0
-  num_teams_formed_each_MHA: 3
+  num_teams_formed_each_MHA: 1
 
 DDPG:
   critic_hidden_size: 25
@@ -24,4 +24,4 @@ ReplayBuffer:
   buffer_size: 28800
 
 Shared:
-  roster_size: 3
+  roster_size: 1

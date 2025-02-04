@@ -19,40 +19,16 @@ Environment:
   # to yield a reward of 1. Observations can be done at any timestep [0..14].
   pois:
     - obj: 0
-      location: [15, 10]
-      radius: 0.5
-      coupling: 2
+      location: [16, 6]
+      radius: 2
+      coupling: 1
       obs_window: [0, 100]
       reward: 1
-      repeat: False
-    
-    - obj: 0
-      location: [10, 15]
-      radius: 0.5
-      coupling: 2
-      obs_window: [0, 100]
-      reward: 1
-      repeat: False
-    
-    - obj: 1
-      location: [17, 17]
-      radius: 1
-      coupling: 2
-      obs_window: [0, 100]
-      reward: 0.25
-      repeat: True
-    
-    - obj: 1
-      location: [17, 3]
-      radius: 1
-      coupling: 2
-      obs_window: [0, 100]
-      reward: 0.25
       repeat: True
 
 Agents:
   # Four rovers (the first dimension's length => 9 agents)
-  starting_locs: [[10, 10], [10, 10], [10, 10], [10, 10], [10, 10], [10, 10], [10, 10], [10, 10]]
-  num_sensors: [4, 4, 4, 4, 4, 4, 4, 4]
-  observation_radii: [5, 5, 5, 5, 5, 5, 5, 5]       # They can "see" POIs up to distance 5
-  max_step_sizes: [1, 1, 1, 1, 1, 1, 1, 1]   # Slows movement, requiring careful planning
+  starting_locs: [[10, 10]]
+  num_sensors: [4]
+  observation_radii: [8]       # They can "see" POIs up to distance 8
+  max_step_sizes: [1]   # Slows movement, requiring careful planning

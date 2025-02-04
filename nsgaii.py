@@ -8,7 +8,9 @@ import pygmo as pg
 import multiheaded_actor as mha
 import MORoverInterface
 import itertools
-import ReplayBuffer
+#import ReplayBuffer
+
+from td3 import add_experiences_to_replay_buffers
 
 torch.manual_seed(2024)
 np.random.seed(2024)
@@ -132,9 +134,10 @@ class NSGAII:
                 fitness = [0 for _ in range(self.num_objs)] # Will store this team's fitness
                 ep_traj, fitness_dict = self.interface.rollout(ind.roster, sampled_team)
                 # Add this episode's experiences to the replay buffer
-                for agent_idx in sampled_team:
-                    for transition in ep_traj[agent_idx]:
-                        self.replay_buffers[agent_idx].add(transition)
+                # for agent_idx in sampled_team:
+                #     for transition in ep_traj[agent_idx]:
+                #         self.replay_buffers[agent_idx].add(transition)
+                add_experiences_to_replay_buffers(ep_traj, self.replay_buffers, sampled_team)
                 # Store fitness
                 for f in fitness_dict:
                     fitness[f] = -fitness_dict[f] # NOTE: The fitness sign is flipped to match Pygmo convention
@@ -174,7 +177,8 @@ class NSGAII:
             roster_idx.reset_borda_points()
         for rank, team_idx in enumerate(sorted_teams):
             # if rank < self.pop_size//2:
-            print(roster_wise_team_fitnesses_fl[team_idx], team_idx // len(roster_wise_team_combinations[0]))
+            # NOTE: uncomment this
+            #print(roster_wise_team_fitnesses_fl[team_idx], team_idx // len(roster_wise_team_combinations[0]))
             # The roster is the row number in which this team lies
             roster_idx = team_idx // len(roster_wise_team_combinations[0])
             # Assign points to the roster
@@ -187,7 +191,7 @@ class NSGAII:
 
         # Create offsprings, leaving 2 empty spots
         offspring_set = []
-        while len(offspring_set) < (self.pop_size // 2 - 1):
+        while len(offspring_set) < (self.pop_size // 2):
         # for _ in range(self.pop_size//2 - 2):
             idx1, idx2 = random.sample(range(len(parent_set)), 2) # As the parent set is sorted
             parent1 = parent_set[idx1] if idx1 < idx2 else parent_set[idx2] # Choose the lower index
