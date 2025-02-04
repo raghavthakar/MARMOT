@@ -149,6 +149,7 @@ class MORoverEnv:
         Returns:
         - reward_vector (dict): Dictionary where keys are objectives (obj) and values are cumulative rewards for each objective.
         Returns a zero reward vector if reward mode is Final and the timestep is not ep_length - 1.
+        The Dict is in order of the objective numbers (0, 1, 2, ....)
         """
         # Initialize the reward vector as a dictionary with objectives as keys and zeroed cumulative rewards
         reward_vector = {obj: 0 for obj in range(self.num_objs)}
@@ -253,7 +254,7 @@ class MORoverEnv:
 
         return updated_locations
 
-    def generate_observations(self, rover_locations, num_sensors_list, observation_radius_list, normalise=False):
+    def generate_observations(self, rover_locations, num_sensors_list, observation_radius_list, normalise_loc=False):
         """
         Generate observations for all rovers based on their positions, sensors, and observation radii.
 
@@ -288,7 +289,7 @@ class MORoverEnv:
             # Whether to include agent's location in observations
             if self.include_location_in_obs:
                 # Choose to normalise or not and add the agent location 
-                if not normalise:
+                if not normalise_loc:
                     observation.extend(rover_pos)
                 else:
                     observation.extend(np.divide(rover_pos, self.dimensions))
