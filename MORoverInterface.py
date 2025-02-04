@@ -20,7 +20,7 @@ class MORoverInterface():
     def _keywise_sum(self, dict1, dict2):
         return {key: dict1.get(key, 0) + dict2.get(key, 0) for key in set(dict1) | set(dict2)}
 
-    def rollout(self, mh_actor: MultiHeadActor, active_agents_indices: list, alg="ddpg", noisy_action=False, noise_std=0.4):
+    def rollout(self, mh_actor: MultiHeadActor, active_agents_indices: list, noisy_action=False, noise_std=0.4):
         """
         Perform a rollout of a given multiheaded actor in the MORoverEnv domain.
 
@@ -48,7 +48,7 @@ class MORoverInterface():
         self.rover_env.reset() # reset the rover env
 
         for t in range(ep_length):
-            observations_list = self.rover_env.generate_observations(agent_locations, num_sensors, observation_radii, normalise=True) # get each agent's observation at the current position
+            observations_list = self.rover_env.generate_observations(agent_locations, num_sensors, observation_radii, normalise_loc=True) # get each agent's observation at the current position
             
             agent_moves = []
             transitions = {} # transition = {'state' : [], 'action' : [], 'local_reward' : 0, 'next_state' : [], 'done' : False}
@@ -57,19 +57,13 @@ class MORoverInterface():
                 # Extract the current observation for this agent
                 agent_observation = torch.FloatTensor(observations_list[i])  # Add batch dimension for the model
 
-                action_log_prob = 0
-                # get actions based on learning mathod
-                if alg=="ddpg":
-                    # Get the deterministic action from the actor
-                    action_tensor = mh_actor.clean_action(agent_observation, head=agent_idx)
-                    
-                    # If noisy_action is True, add noise to the deterministic action for exploration
-                    if noisy_action:
-                        noise = torch.normal(mean=0.0, std=noise_std, size=action_tensor.size())
-                        action_tensor = action_tensor + noise
+                # Get the deterministic action from the actor
+                action_tensor = mh_actor.clean_action(agent_observation, head=agent_idx)
                 
-                elif alg=="ppo":
-                    action_tensor, action_log_prob = mh_actor.select_action(state, head=agent_idx)
+                # If noisy_action is True, add noise to the deterministic action for exploration
+                if noisy_action:
+                    noise = torch.normal(mean=0.0, std=noise_std, size=action_tensor.size())
+                    action_tensor = action_tensor + noise
                 
                 # Ensure actions are clipped to [-1, 1] after adding noise
                 action_tensor = torch.clamp(action_tensor, -1.0, 1.0)
@@ -93,7 +87,6 @@ class MORoverInterface():
                     'state': state,
                     'action': action,
                     'location': agent_locations[i],
-                    'action_log_prob': action_log_prob,
                     'local_reward' : None, # Will be applied later
                     'next_state': [],
                     'done': False
@@ -113,7 +106,7 @@ class MORoverInterface():
             cumulative_global_reward = self._keywise_sum(cumulative_global_reward, global_reward)
 
             # Prepare for next state's observations (after environment update)
-            next_observations_list = self.rover_env.generate_observations(agent_locations, num_sensors, observation_radii, normalise=True)
+            next_observations_list = self.rover_env.generate_observations(agent_locations, num_sensors, observation_radii, normalise_loc=True)
 
             # Update each agent's transition dictionary with next state and done
             for i, agent_idx in enumerate(active_agents_indices):
@@ -134,7 +127,7 @@ class MORoverInterface():
         '''
         Get the number of inputs to the actor network.
         '''
-        return self.config['Agents']['num_sensors'][0] * 2 + len(self.rover_env.dimensions)*int(self.rover_env.include_location_in_obs)
+        return self.config['Agents']['num_sensors'][0] * (1 + self.get_num_objs()) + len(self.rover_env.dimensions)*int(self.rover_env.include_location_in_obs)
     
     def get_action_size(self):
         '''
