@@ -194,66 +194,25 @@ class ReplayBuffer(object):
             torch.FloatTensor(self.not_done[ind])
         )
 
-def add_experiences_to_replay_buffers(rollout_trajectory, rep_buffs, active_agents_indices):
-    for agent_idx in active_agents_indices:
-        replay_buffer = rep_buffs[agent_idx]
-        # Iterate over the transitions for this agent.
-        for transition in rollout_trajectory[agent_idx]:
-            # Convert tensors to numpy arrays, if needed.
-            state = transition['state']
-            if torch.is_tensor(state):
-                state = state.detach().cpu().numpy()
+    def parse_transition_dict(self, transition):
+        # Convert tensors to numpy arrays, if needed.
+        state = transition['state']
+        if torch.is_tensor(state):
+            state = state.detach().cpu().numpy()
 
-            action = transition['action']
-            if torch.is_tensor(action):
-                action = action.detach().cpu().numpy()
+        action = transition['action']
+        if torch.is_tensor(action):
+            action = action.detach().cpu().numpy()
 
-            next_state = transition['next_state']
-            if torch.is_tensor(next_state):
-                next_state = next_state.detach().cpu().numpy()
+        next_state = transition['next_state']
+        if torch.is_tensor(next_state):
+            next_state = next_state.detach().cpu().numpy()
 
-            # The reward is stored under 'local_reward'
-            reward = transition['local_reward']
+        # The reward is stored under 'local_reward'
+        reward = transition['local_reward']
 
-            # The buffer expects 'done' as 0 or 1, where done==True -> 1.
-            done = 1 if transition['done'] else 0
+        # The buffer expects 'done' as 0 or 1, where done==True -> 1.
+        done = 1 if transition['done'] else 0
 
-            # Now add the transition to the replay buffer.
-            replay_buffer.add(state, action, next_state, reward, done)
-
-if __name__ == "__main__":
-    import MORoverInterface
-
-    interface = MORoverInterface.MORoverInterface("config/MORoverEnvConfig.yaml")
-    td3 = TD3(state_dim=12, action_dim=interface.get_action_size(), max_action=1.0, num_heads=1)
-    rep_buffs = [ReplayBuffer(state_dim=12, action_dim=interface.get_action_size(), max_size=50_000) for _ in range(1)]
-
-
-    for i in range(3000):
-        traj, g = interface.rollout(td3.actor, [0], noisy_action=True, noise_std=0.15)
-        add_experiences_to_replay_buffers(traj, rep_buffs=rep_buffs, active_agents_indices=[0])
-
-        for _ in range(25):
-            td3.train(replay_buffer=rep_buffs[0], agent_id=0)
-        
-        
-
-        traj, g = interface.rollout(td3.actor, [0])
-
-        # if(i > 40 and g[0] != 1):
-        #     print(traj[0][-1]["location"])
-        #     exit()
-
-        if(i % 5 == 0):
-            print("Epoch:", i, "G:", g, "Final Location:", traj[0][-1]["location"])
-    
-    print("Finished Training")
-
-    traj, g = interface.rollout(td3.actor, [0])
-    print("G:", g)
-
-
-    
-
-        
-    
+        # Now return the transition
+        return state, action, next_state, reward, done
