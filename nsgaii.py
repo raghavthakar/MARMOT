@@ -133,7 +133,7 @@ class NSGAII:
                 # Add this episode's experiences to the replay buffer
                 for agent_idx in sampled_team:
                     for transition in ep_traj[agent_idx]:
-                        self.replay_buffers[agent_idx].add(*self.replay_buffers[agent_idx].parse(transition))
+                        self.replay_buffers[agent_idx].add(*self.replay_buffers[agent_idx].parse_transition_dict(transition))
                 # Store fitness
                 for f in fitness_dict:
                     fitness[f] = -fitness_dict[f] # NOTE: The fitness sign is flipped to match Pygmo convention
