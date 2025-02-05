@@ -9,7 +9,7 @@ import itertools
 import nsgaii
 
 from multiheaded_actor import MultiHeadActor
-from td3 import ReplayBuffer, add_experiences_to_replay_buffers, TD3
+from td3 import ReplayBuffer, TD3
 import MORoverInterface
 
 np.random.seed(2024)
@@ -27,7 +27,8 @@ for i in range(120):
     # add_experiences_to_replay_buffers(traj, rep_buffs=rep_buffs, active_agents_indices=[0])
     nsga.evolve()
     traj, g = interface.rollout(td3.actor, [0], noisy_action=True, noise_std=0.15)
-    add_experiences_to_replay_buffers(traj, rep_buffs, [0])
+    for transition in traj[0]:
+        rep_buffs[0].add(*rep_buffs[0].parse_transition_dict(transition))
 
     for _ in range(625):
         td3.train(replay_buffer=rep_buffs[0], agent_id=0)

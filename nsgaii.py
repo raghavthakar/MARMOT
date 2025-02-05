@@ -8,9 +8,6 @@ import pygmo as pg
 import multiheaded_actor as mha
 import MORoverInterface
 import itertools
-#import ReplayBuffer
-
-from td3 import add_experiences_to_replay_buffers
 
 torch.manual_seed(2024)
 np.random.seed(2024)
@@ -134,10 +131,9 @@ class NSGAII:
                 fitness = [0 for _ in range(self.num_objs)] # Will store this team's fitness
                 ep_traj, fitness_dict = self.interface.rollout(ind.roster, sampled_team)
                 # Add this episode's experiences to the replay buffer
-                # for agent_idx in sampled_team:
-                #     for transition in ep_traj[agent_idx]:
-                #         self.replay_buffers[agent_idx].add(transition)
-                add_experiences_to_replay_buffers(ep_traj, self.replay_buffers, sampled_team)
+                for agent_idx in sampled_team:
+                    for transition in ep_traj[agent_idx]:
+                        self.replay_buffers[agent_idx].add(*self.replay_buffers[agent_idx].parse(transition))
                 # Store fitness
                 for f in fitness_dict:
                     fitness[f] = -fitness_dict[f] # NOTE: The fitness sign is flipped to match Pygmo convention
@@ -216,11 +212,3 @@ class NSGAII:
         random.shuffle(self.pop) # NOTE: This is so that equally dominnat offpsrings in later indices don't just get thrown out
         
         return returnable_objects # pop, roster_team_combinations, roster_team_fitnesses, champion_roster, champion_team_indicies
-
-
-if __name__ == "__main__":
-    r_buffs = [ReplayBuffer.ReplayBuffer("/home/raghav/Research/IJCAI25/MOMERL/config/MARMOTConfig.yaml") for _ in range(2)]
-    evo = NSGAII(alg_config_filename="/home/raghav/Research/IJCAI25/MOMERL/config/MARMOTConfig.yaml", rover_config_filename="/home/raghav/Research/IJCAI25/MOMERL/config/MORoverEnvConfig.yaml", replay_buffers=r_buffs)
-    for i in range(10000):
-        print("Generation: ", i, "-----")
-        evo.evolve()
