@@ -25,10 +25,18 @@ Environment:
       obs_window: [0, 100]
       reward: 1
       repeat: True
+    
+    - obj: 1
+      location: [6, 16]
+      radius: 2
+      coupling: 1
+      obs_window: [0, 100]
+      reward: 1
+      repeat: True
 
 Agents:
   # Four rovers (the first dimension's length => 9 agents)
-  starting_locs: [[10, 10]]
-  num_sensors: [4]
-  observation_radii: [8]       # They can "see" POIs up to distance 8
-  max_step_sizes: [1]   # Slows movement, requiring careful planning
+  starting_locs: [[10, 10], [10, 10]]
+  num_sensors: [4, 4]
+  observation_radii: [8, 8]       # They can "see" POIs up to distance 8
+  max_step_sizes: [1, 1]   # Slows movement, requiring careful planning
