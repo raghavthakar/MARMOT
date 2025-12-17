@@ -13,6 +13,6 @@ To achieve this, we leverage the Multiagent Evolutionary Reinforcement Learning 
 ## How to run this locally
 1. Create a new conda virtual environment
 2. Clone this repository
-3. Install all the required dependencies listed in `environment.yml'
+3. Install all the required dependencies listed in `environment.yml`
 4. Navigate to the repository, and replace the paths in `MARMOT.py` with the paths to the config files in your system
-5. Run the experiment by doing: `python MARMOT.py'
+5. Run the experiment by doing: `python MARMOT.py`
